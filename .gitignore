@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.env/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# PyCharm
+.idea/
+*.iml
+
+# C++ (CLion)
+cmake-build-debug/
+cmake-build-release/
+.idea/
+.DS_Store
+*.o
+*.obj
+*.exe
+*.log
+
+# General
+*.swp
+*~
+.vscode/
+*.xlsx
+
+cpp/.idea
+cpp/cmake-build-debug
+cpp/CMakeLists.txt
+
