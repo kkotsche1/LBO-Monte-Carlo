@@ -2,10 +2,11 @@ import re
 import openpyxl
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+from cell_mappings import cell_mappings
 import numpy as np
 
 # Define the path to your Excel file
-EXCEL_FILE_PATH = 'lbo_model.xlsx'  # Update with your actual file path
+EXCEL_FILE_PATH = '../cleaned_lbo_template.xlsx'  # Update with your actual file path
 
 # Load the workbook
 wb = openpyxl.load_workbook(EXCEL_FILE_PATH, data_only=True)
@@ -88,7 +89,7 @@ def get_cell_value(sheet, cell: str) -> Optional[float]:
     Retrieves and converts the value from a specific cell to float.
     Returns None if the cell is empty or contains non-numeric data.
     """
-    value = sheet[cell].value
+    value = sheet[cell].value  # data_only=True ensures this is the evaluated value if a formula is present
     if isinstance(value, (int, float)):
         return float(value)
     elif isinstance(value, str):
@@ -100,6 +101,7 @@ def get_cell_value(sheet, cell: str) -> Optional[float]:
             return None
     else:
         return None
+
 
 
 def extract_case_data(case_name: str, mappings: Dict[str, Dict[int, str]], sheet) -> CaseData:
@@ -181,7 +183,6 @@ def build_cases(cell_mappings: Dict[str, Dict[str, Dict[int, str]]], cases_sheet
         case_data = extract_case_data(case_name, mappings, cases_sheet)
         cases[case_name] = case_data
     return cases
-
 
 # Build all cases
 all_cases = build_cases(cell_mappings, cases_sheet)
