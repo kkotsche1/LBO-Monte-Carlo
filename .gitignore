@@ -30,7 +30,7 @@ cmake-build-release/
 .vscode/
 *.xlsx
 
-cpp/.idea
+cpp/.idea/*
 cpp/cmake-build-debug
 cpp/CMakeLists.txt
 
