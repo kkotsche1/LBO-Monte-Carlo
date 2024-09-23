@@ -28,7 +28,7 @@ repayment_schedule = extract_debt_repayment_schedules(lbo_sheet)
 selected_case = all_cases['Sensitivity Case']
 
 # Define the list of years we want to model for the LBO
-years = ['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030']
+years = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
 
 # Define the exit horizons (3, 4, 5, and 6 years after investment)
 exit_horizons = [3, 4, 5, 6]

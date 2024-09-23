@@ -2,14 +2,7 @@
 
 import pandas as pd
 from numpy_financial import irr
-
 from python.debt_repayment_schedule import calculate_debt_balances_and_interest
-
-
-import pandas as pd
-from numpy_financial import irr
-from python.debt_repayment_schedule import calculate_debt_balances_and_interest
-
 
 def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment_schedule, years, tax_rate=0.25, exit_horizons=[3, 4, 5, 6]):
     """
@@ -55,24 +48,30 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
     exit_results = {}
 
     for year in years:
-        year = int(year)  # Ensure year is treated as an integer
 
-        # Operating financials: EBITDA, depreciation, etc.
-        ebitda = case_data.ebitda[year]
-        depreciation = case_data.depreciation[year]
-        amortization = case_data.amortization[year]
-        ebit = ebitda + depreciation + amortization
+        # Revenue, EBITDA margin, and normalization (use CaseData)
+        revenue = case_data.revenue[year]
+        ebitda_margin = case_data.ebitda_margin[year]
+        reported_ebitda = revenue * ebitda_margin
+        normalized_ebitda = reported_ebitda - case_data.ebitda_normalizations[year]
 
-        # Total interest expense for the year
-        interest_expense = sum(debt_info[debt_type][str(year)]['Interest Payment'] for debt_type in debt_info)
+        # Correct EBITDA and EBIT calculation using depreciation and amortization from CaseData
+        ebitda = normalized_ebitda
+        depreciation = revenue * case_data.depreciation_percent[year]
+        amortization = revenue * case_data.amortization_percent[year]
+        ebit = ebitda - depreciation - amortization
 
-        # Earnings before tax
-        ebt = ebit - interest_expense
+        # Total interest expense including PIK interest
+        pik_interest = expanded_metrics.get('PIK Interest', 0)
+        total_interest_expense = sum(debt_info[debt_type][year]['Interest Payment'] for debt_type in debt_info) + pik_interest
+
+        # Earnings before tax (EBT)
+        ebt = ebit - total_interest_expense
         taxes = max(0, ebt * tax_rate)
         net_income = ebt - taxes
 
-        # Changes in working capital (check if previous year exists)
-        if year > min(case_data.ebitda.keys()):  # Only calculate if there's a previous year
+        # Changes in working capital
+        if year > min(case_data.revenue.keys()):  # Only calculate if there's a previous year
             previous_year = year - 1
             change_in_nwc = (
                 (case_data.inventory[year] - case_data.inventory[previous_year]) +
@@ -82,34 +81,39 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
         else:
             change_in_nwc = 0  # No change in NWC for the first year
 
+
+
+        # Change in provisions (if applicable)
+        change_in_provisions = case_data.provisions[year] - case_data.provisions[previous_year] if year > min(years) else 0
+
         # Capital expenditures (CapEx)
-        capex = case_data.maintenance_capex[year] + case_data.expansion_capex[year]
+        capex = revenue * case_data.m_capex_percent[year] + revenue * case_data.e_capex_percent[year]
 
         # Free Cash Flow (before debt service)
-        fcf = net_income - change_in_nwc - capex
+        fcf = net_income - change_in_nwc - change_in_provisions - capex
 
-        # Apply to mandatory and optional debt repayments
+        # Apply mandatory debt repayments
         for debt_type in ['Senior A', 'Senior B', 'Subordinate', 'Mezzanine']:
-            repayment = repayment_schedule[debt_type][str(year)]
-            debt_info[debt_type][str(year)]['Closing Balance'] -= repayment
+            repayment = repayment_schedule[debt_type][year]
+            debt_info[debt_type][year]['Closing Balance'] -= repayment
 
-        # Revolver repayment/utilization logic (optional)
-        revolver_utilization = repayment_schedule['RCF Utilization'][str(year)]
-        revolver_repayment = repayment_schedule['RCF Repayment'][str(year)]
-        debt_info['RCF'][str(year)]['Closing Balance'] += revolver_utilization - revolver_repayment
+        # Revolver repayment/utilization logic
+        revolver_utilization = repayment_schedule['RCF Utilization'][year]
+        revolver_repayment = repayment_schedule['RCF Repayment'][year]
+        debt_info['RCF'][year]['Closing Balance'] += revolver_utilization - revolver_repayment
 
     # Now perform calculations for multiple exit horizons
     initial_year = min(years)
     for exit_horizon in exit_horizons:
-        exit_year = int(initial_year) + exit_horizon
+        exit_year = initial_year + exit_horizon
 
         # Ensure the exit year is valid within the model's timeline
         if exit_year in case_data.ebitda:
-            exit_ebitda = case_data.ebitda[exit_year]
+            exit_ebitda = normalized_ebitda  # Use normalized EBITDA for exit calculation
             exit_enterprise_value = exit_ebitda * expanded_metrics.get('Exit Multiple', expanded_metrics['Entry Multiple'])
 
             # Calculate net debt at exit
-            net_debt_at_exit = sum(debt_info[debt_type][str(exit_year)]['Closing Balance'] for debt_type in debt_info)
+            net_debt_at_exit = sum(debt_info[debt_type][exit_year]['Closing Balance'] for debt_type in debt_info)
             equity_value_at_exit = exit_enterprise_value - net_debt_at_exit
 
             # IRR & MoM Calculations

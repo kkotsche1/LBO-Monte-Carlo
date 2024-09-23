@@ -60,7 +60,6 @@ def extract_case_data(case_name: str, mappings: Dict[str, Dict[int, str]], sheet
                 case_data.amortization[year] = value
             elif variable == 'EBIT':
                 case_data.ebit[year] = value
-            # Continue mapping other variables to their respective fields.
             elif variable == 'Maintenance Capex':
                 case_data.maintenance_capex[year] = value
             elif variable == 'Expansion Capex':
@@ -81,10 +80,29 @@ def extract_case_data(case_name: str, mappings: Dict[str, Dict[int, str]], sheet
                 case_data.revenue_growth[year] = value
             elif variable == 'EBITDA margin':
                 case_data.ebitda_margin[year] = value
-            # Add more mappings as needed.
-
+            elif variable == 'Depreciation as % of rev.':
+                case_data.depreciation_percent[year] = value  # Add this
+            elif variable == 'Amortization as % of rev.':
+                case_data.amortization_percent[year] = value  # Add this
+            elif variable == 'EBIT margin':
+                case_data.ebit_margin[year] = value
+            elif variable == 'M-Capex as % of rev.':
+                case_data.m_capex_percent[year] = value  # Add this
+            elif variable == 'E-Capex as % of rev.':
+                case_data.e_capex_percent[year] = value  # Add this
+            elif variable == 'Inventory as % of rev.':
+                case_data.inventory_percent[year] = value  # Add this
+            elif variable == 'Accounts Receivable as % of rev.':
+                case_data.accounts_receivable_percent[year] = value  # Add this
+            elif variable == 'Accounts Payable as % of rev.':
+                case_data.accounts_payable_percent[year] = value  # Add this
+            elif variable == 'Other W/C Assets as % of rev.':
+                case_data.other_wc_assets_percent[year] = value  # Add this
+            elif variable == 'Other W/C Liabilities as % of rev.':
+                case_data.other_wc_liabilities_percent[year] = value  # Add this
+            elif variable == 'Provisions growth':
+                case_data.provisions_growth[year] = value
     return case_data
-
 
 def build_cases(cell_mappings: Dict[str, Dict[str, Dict[int, str]]], cases_sheet) -> Dict[str, CaseData]:
     """

@@ -12,7 +12,7 @@ def extract_debt_repayment_schedules(sheet):
         dict: A dictionary containing the repayment schedules for each debt type.
     """
     repayment_schedules = {}
-    years = ['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030']
+    years = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
     year_columns = ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']  # Columns corresponding to 2023E - 2030E
 
     # Extract Senior A repayment schedule
@@ -73,7 +73,7 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
         'Senior B': {},
         'Subordinate': {},
         'Mezzanine': {},
-        'RCF': {}  # Ensure RCF is included in debt_info initialization
+        'RCF': {}
     }
 
     # Handle fixed repayment schedule for Senior A, Senior B, Subordinate, Mezzanine
