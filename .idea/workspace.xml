@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6bd2f706-ee76-4c96-a230-b555bf5cec50" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python/case_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/case_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python/debt_repayment_schedule.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/debt_repayment_schedule.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python/lbo_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/lbo_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="6bd2f706-ee76-4c96-a230-b555bf5cec50" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -130,7 +124,7 @@
       <option name="presentableId" value="Default" />
       <updated>1727020176437</updated>
       <workItem from="1727021807650" duration="17992000" />
-      <workItem from="1727122595565" duration="1529000" />
+      <workItem from="1727122595565" duration="2264000" />
     </task>
     <servers />
   </component>
