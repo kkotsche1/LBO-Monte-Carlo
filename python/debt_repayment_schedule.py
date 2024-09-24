@@ -80,20 +80,16 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
     for debt_type in ['Senior A', 'Senior B', 'Subordinate', 'Mezzanine']:
         opening_balance = starting_balances[debt_type]
         for year in years:
-            repayment = repayment_schedule[debt_type][year]
+            repayment = -repayment_schedule[debt_type][year]
             closing_balance = opening_balance - repayment
-
-            # Calculate interest payment based on the opening balance and interest rate
             interest_payment = opening_balance * interest_rates[debt_type]
 
-            # Store the values for the year
+            # Store values and update opening balance for next year
             debt_info[debt_type][year] = {
                 'Opening Balance': opening_balance,
                 'Closing Balance': closing_balance,
                 'Interest Payment': interest_payment
             }
-
-            # Update opening balance for next year
             opening_balance = closing_balance
 
     # Handle RCF separately: utilization and repayment
