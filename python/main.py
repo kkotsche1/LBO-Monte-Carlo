@@ -25,10 +25,10 @@ all_cases = build_cases(cell_mappings, cases_sheet)
 repayment_schedule = extract_debt_repayment_schedules(lbo_sheet)
 
 # Assuming you have the expanded_metrics and all_cases dictionaries
-selected_case = all_cases['Sensitivity Case']
+selected_case = all_cases['Management Case']
 
 # Define the list of years we want to model for the LBO
-years = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
+years = [2024, 2025, 2026, 2027, 2028, 2029, 2030]
 
 # Define the exit horizons (3, 4, 5, and 6 years after investment)
 exit_horizons = [3, 4, 5, 6]
@@ -37,15 +37,12 @@ exit_horizons = [3, 4, 5, 6]
 results = run_lbo_model_with_repayment_schedule(expanded_metrics, selected_case, repayment_schedule, years, exit_horizons=exit_horizons)
 
 # Print the results for each exit horizon
-for horizon, metrics in results.items():
-    print(f"\nExit after {horizon} years (Exit Year: {metrics['Exit Year']}):")
-    print(f"  Investor IRR: {metrics['IRR']:.2%}")
-    print(f"  Investor MoM: {metrics['MoM']:.2f}x")
-    print(f"  Net Debt at Exit: {metrics['Net Debt at Exit']:.2f}")
-    print(f"  Equity Value at Exit: {metrics['Equity Value at Exit']:.2f}")
-
-
-
+# for horizon, metrics in results.items():
+#     print(f"\nExit after {horizon} years (Exit Year: {metrics['Exit Year']}):")
+#     print(f"  Investor IRR: {metrics['IRR']:.2%}")
+#     print(f"  Investor MoM: {metrics['MoM']:.2f}x")
+#     print(f"  Net Debt at Exit: {metrics['Net Debt at Exit']:.2f}")
+#     print(f"  Equity Value at Exit: {metrics['Equity Value at Exit']:.2f}")
 
 def extract_stochastic_variables(expanded_metrics, all_cases):
     # Initialize the data structure

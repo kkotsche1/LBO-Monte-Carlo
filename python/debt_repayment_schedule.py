@@ -52,22 +52,6 @@ def extract_debt_repayment_schedules(sheet):
 
 
 def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, interest_rates, starting_balances, years):
-    """
-    Calculates debt balances and interest payments for each debt type based on the repayment schedule.
-
-    Handles Senior A, Senior B, Subordinate, Mezzanine, and RCF (Revolver).
-
-    Parameters:
-        deal_metrics (dict): Contains initial debt amounts and interest rates.
-        repayment_schedule (dict): Repayment schedule for each debt type.
-        interest_rates (dict): Interest rates for each debt type.
-        starting_balances (dict): Starting balances for each debt type.
-        years (list): List of years for which to calculate balances.
-
-    Returns:
-        dict: Contains opening balances, closing balances, and interest payments for each year and debt type.
-    """
-    # Initialize debt_info for all debt types, including RCF
     debt_info = {
         'Senior A': {},
         'Senior B': {},
@@ -75,42 +59,67 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
         'Mezzanine': {},
         'RCF': {}
     }
+    balances = starting_balances.copy()
 
-    # Handle fixed repayment schedule for Senior A, Senior B, Subordinate, Mezzanine
-    for debt_type in ['Senior A', 'Senior B', 'Subordinate', 'Mezzanine']:
-        opening_balance = starting_balances[debt_type]
-        for year in years:
-            repayment = -repayment_schedule[debt_type][year]
-            closing_balance = opening_balance - repayment
-            interest_payment = opening_balance * interest_rates[debt_type]
+    for year in years:
+        for debt_type in ['Senior A', 'Senior B', 'Subordinate', 'Mezzanine']:
+            opening_balance = balances[debt_type]
 
-            # Store values and update opening balance for next year
+            # Repayment from the schedule (repayments are negative, so we negate them)
+            repayment = -repayment_schedule[debt_type][year]  # Negate repayment
+            closing_balance = opening_balance - repayment  # Correctly reduce debt balance
+
+            # Calculate average balance for interest calculation
+            average_balance = (opening_balance + closing_balance) / 2
+            interest_rate = interest_rates[debt_type]
+            interest_payment = average_balance * interest_rate
+
+            # Store values for this year
             debt_info[debt_type][year] = {
                 'Opening Balance': opening_balance,
+                'Repayment': repayment,
                 'Closing Balance': closing_balance,
+                'Average Balance': average_balance,
+                'Interest Rate': interest_rate,
                 'Interest Payment': interest_payment
             }
-            opening_balance = closing_balance
 
-    # Handle RCF separately: utilization and repayment
-    rcf_opening_balance = starting_balances['RCF']
-    for year in years:
-        # Revolver utilization and repayment
+            # Update opening balance for next year
+            balances[debt_type] = closing_balance
+
+        # Handle RCF separately
+        debt_type = 'RCF'
+        opening_balance = balances[debt_type]
         rcf_utilization = repayment_schedule['RCF Utilization'][year]
-        rcf_repayment = repayment_schedule['RCF Repayment'][year]
-        rcf_closing_balance = rcf_opening_balance + rcf_utilization - rcf_repayment
+        rcf_repayment = -repayment_schedule['RCF Repayment'][year]  # Negate repayment
+        closing_balance = opening_balance + rcf_utilization - rcf_repayment
 
-        # Interest payment based on the opening balance
-        rcf_interest_payment = rcf_opening_balance * interest_rates['RCF']
+        average_balance = (opening_balance + closing_balance) / 2
+        interest_rate = interest_rates[debt_type]
+        interest_payment = average_balance * interest_rate
 
-        # Store the values for the year in the debt_info dictionary for RCF
-        debt_info['RCF'][year] = {
-            'Opening Balance': rcf_opening_balance,
-            'Closing Balance': rcf_closing_balance,
-            'Interest Payment': rcf_interest_payment
+        debt_info[debt_type][year] = {
+            'Opening Balance': opening_balance,
+            'RCF Utilization': rcf_utilization,
+            'RCF Repayment': rcf_repayment,
+            'Closing Balance': closing_balance,
+            'Average Balance': average_balance,
+            'Interest Rate': interest_rate,
+            'Interest Payment': interest_payment
         }
 
-        # Update RCF opening balance for next year
-        rcf_opening_balance = rcf_closing_balance
+        # Update opening balance for next year
+        balances[debt_type] = closing_balance
+
+        if year == 2026:
+            # Debugging print statements
+            print(f"Year {year}, {debt_type}:")
+            print(f"  Opening Balance: {opening_balance}")
+            print(f"  RCF Utilization: {rcf_utilization}")
+            print(f"  RCF Repayment (negated): {rcf_repayment}")  # Should be positive now
+            print(f"  Closing Balance: {closing_balance}")
+            print(f"  Average Balance: {average_balance}")
+            print(f"  Interest Rate: {interest_rate}")
+            print(f"  Interest Payment: {interest_payment}\n")
 
     return debt_info
