@@ -17,6 +17,9 @@ cases_sheet = wb['Cases']
 
 # Extract deal metrics
 expanded_metrics = extract_expanded_deal_metrics(lbo_sheet)
+# Print the Senior A and Senior B amounts to ensure they're pulled correctly
+print(f"Senior A Amount (from Excel): {expanded_metrics['Senior A Amount']}")
+print(f"Senior B Amount (from Excel): {expanded_metrics['Senior B Amount']}")
 
 # Build and extract all case data
 all_cases = build_cases(cell_mappings, cases_sheet)
@@ -36,6 +39,9 @@ exit_horizons = [2026, 2027, 2028, 2029]
 # Run the LBO model to get financial metrics for each year
 lbo_results = run_lbo_model_with_repayment_schedule(expanded_metrics, selected_case, repayment_schedule, years, exit_horizons=exit_horizons)
 
+for key in lbo_results.keys():
+    print(lbo_results[key])
+    print()
 
 
 def extract_stochastic_variables(expanded_metrics, all_cases):

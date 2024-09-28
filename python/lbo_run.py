@@ -107,6 +107,7 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
             revolver_balance += revolver_draw
             cash_balance = 0  # After drawing from revolver, cash balance should be exactly 0
             fcf_post_debt_service = 0  # Reset FCF post revolver draw (since it's fully covered)
+
         else:
             if fcf_post_debt_service > 0 and revolver_balance > 0:
                 # Repay revolver if there is a positive FCF and an outstanding revolver balance
