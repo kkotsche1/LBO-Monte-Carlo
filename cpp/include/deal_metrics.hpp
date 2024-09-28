@@ -51,12 +51,3 @@ struct DealMetrics {
     // Key: Period (e.g., "Entry + 3yrs"), Value: ExitMetrics struct
     std::map<std::string, ExitMetrics> exit_metrics_by_period;
 };
-
-struct ExitMetrics {
-    double exit_multiple;
-    double enterprise_value_exit;
-    double net_debt_exit;
-    double equity_value_exit;
-    double mom;  // Multiple on Money
-    double irr;
-};
