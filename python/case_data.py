@@ -102,6 +102,7 @@ def extract_case_data(case_name: str, mappings: Dict[str, Dict[int, str]], sheet
                 case_data.other_wc_liabilities_percent[year] = value  # Add this
             elif variable == 'Provisions growth':
                 case_data.provisions_growth[year] = value
+
     return case_data
 
 def build_cases(cell_mappings: Dict[str, Dict[str, Dict[int, str]]], cases_sheet) -> Dict[str, CaseData]:

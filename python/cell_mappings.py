@@ -113,7 +113,7 @@ cell_mappings = {
             2028: 'N161', 2029: 'O161', 2030: 'P161'
         }
     },
-    'Sensitivity Case': {
+    'Bear Case': {
         # Key P&L Drivers
         'Revenue': {
             2023: 'I173', 2024: 'J173', 2025: 'K173', 2026: 'L173', 2027: 'M173',
