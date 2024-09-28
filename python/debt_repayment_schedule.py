@@ -1,5 +1,7 @@
-from excel_utils import get_cell_value
+# debt_repayment_schedule.py
 
+from excel_utils import get_cell_value
+from openpyxl import worksheet
 
 def extract_debt_repayment_schedules(sheet):
     """
@@ -62,12 +64,15 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
     balances = starting_balances.copy()
 
     for year in years:
+        print(f"\nYear: {year}")
         for debt_type in ['Senior A', 'Senior B', 'Subordinate', 'Mezzanine']:
             opening_balance = balances[debt_type]
 
-            # Repayment from the schedule (repayments are negative, so we negate them)
-            repayment = -repayment_schedule[debt_type][year]  # Negate repayment
-            closing_balance = opening_balance - repayment  # Correctly reduce debt balance
+            # Repayment values are already negative, so just add them directly
+            repayment = repayment_schedule[debt_type][year]
+            closing_balance = opening_balance + repayment  # Repayments reduce the balance (since they are negative)
+
+            print(f"{debt_type} - Opening Balance: {opening_balance}, Repayment: {repayment}, Closing Balance: {closing_balance}")
 
             # Calculate average balance for interest calculation
             average_balance = (opening_balance + closing_balance) / 2
@@ -91,8 +96,10 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
         debt_type = 'RCF'
         opening_balance = balances[debt_type]
         rcf_utilization = repayment_schedule['RCF Utilization'][year]
-        rcf_repayment = -repayment_schedule['RCF Repayment'][year]  # Negate repayment
-        closing_balance = opening_balance + rcf_utilization - rcf_repayment
+        rcf_repayment = repayment_schedule['RCF Repayment'][year]  # No negation needed
+        closing_balance = opening_balance + rcf_utilization + rcf_repayment  # Both utilization and repayment are accounted for
+
+        print(f"RCF - Opening Balance: {opening_balance}, Utilization: {rcf_utilization}, Repayment: {rcf_repayment}, Closing Balance: {closing_balance}")
 
         average_balance = (opening_balance + closing_balance) / 2
         interest_rate = interest_rates[debt_type]
@@ -110,16 +117,5 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
 
         # Update opening balance for next year
         balances[debt_type] = closing_balance
-
-        if year == 2026:
-            # Debugging print statements
-            print(f"Year {year}, {debt_type}:")
-            print(f"  Opening Balance: {opening_balance}")
-            print(f"  RCF Utilization: {rcf_utilization}")
-            print(f"  RCF Repayment (negated): {rcf_repayment}")  # Should be positive now
-            print(f"  Closing Balance: {closing_balance}")
-            print(f"  Average Balance: {average_balance}")
-            print(f"  Interest Rate: {interest_rate}")
-            print(f"  Interest Payment: {interest_payment}\n")
 
     return debt_info

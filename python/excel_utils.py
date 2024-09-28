@@ -20,24 +20,3 @@ def get_cell_value(sheet: worksheet, cell: str) -> Optional[float]:
             return None
     return None
 
-def extract_exit_metrics_by_columns(sheet: worksheet, period_column_map: Dict[str, str]) -> Dict[str, Dict[str, float]]:
-    """
-    Extract exit metrics dynamically for each period based on the column location in the Excel sheet.
-    period_column_map: A dictionary mapping periods (e.g., "Entry + 3yrs") to column letters (e.g., "G").
-    """
-    exit_metrics = {}
-
-    for period, column in period_column_map.items():
-        period_data = {}
-
-        # Example cell extraction for the period
-        period_data['Exit Multiple'] = get_cell_value(sheet, f'{column}31')
-        period_data['Enterprise Value Exit'] = get_cell_value(sheet, f'{column}32')
-        period_data['Net Debt Exit'] = get_cell_value(sheet, f'{column}33')
-        period_data['Equity Value Exit'] = get_cell_value(sheet, f'{column}35')
-        period_data['MoM'] = get_cell_value(sheet, f'{column}43')
-        period_data['IRR'] = get_cell_value(sheet, f'{column}44')
-
-        exit_metrics[period] = period_data
-
-    return exit_metrics

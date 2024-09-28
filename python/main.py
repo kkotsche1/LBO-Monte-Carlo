@@ -31,10 +31,10 @@ selected_case = all_cases['Management Case']
 years = [2024, 2025, 2026, 2027, 2028, 2029, 2030]
 
 # Define the exit horizons (3, 4, 5, and 6 years after investment)
-exit_horizons = [3, 4, 5, 6]
+exit_horizons = [2026, 2027, 2028, 2029]
 
-# Run the LBO model with the repayment schedule and multiple exit horizons
-results = run_lbo_model_with_repayment_schedule(expanded_metrics, selected_case, repayment_schedule, years, exit_horizons=exit_horizons)
+# Run the LBO model to get financial metrics for each year
+lbo_results = run_lbo_model_with_repayment_schedule(expanded_metrics, selected_case, repayment_schedule, years, exit_horizons=exit_horizons)
 
 # Print the results for each exit horizon
 # for horizon, metrics in results.items():

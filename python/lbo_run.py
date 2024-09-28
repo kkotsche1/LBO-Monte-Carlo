@@ -1,12 +1,11 @@
 # lbo_run.py
 
-import pandas as pd
-from numpy_financial import irr
+import pyxirr
 from python.debt_repayment_schedule import calculate_debt_balances_and_interest
 
 
 def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment_schedule, years, tax_rate=0.217,
-                                          exit_horizons=[3, 4, 5, 6]):
+                                          exit_horizons=[2026, 2027, 2028, 2029]):
     """
     Runs the LBO model with a predefined debt repayment schedule and calculates results for multiple exit years.
 
@@ -21,6 +20,8 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
     Returns:
         dict: A dictionary containing IRR, MoM, and other metrics for each exit year horizon.
     """
+
+    year_results = {}
 
     # Extract initial debt balances and interest rates from expanded_metrics
     starting_balances = {
@@ -56,6 +57,12 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
 
     # Create a dictionary to store results for multiple exit years
     exit_results = {}
+
+    # Create a mapping from exit horizon to keys in 'Exit Metrics by Period'
+    exit_horizon_to_key = {2026: 'Entry + 3yrs', 2027: 'Entry + 4yrs', 2028: 'Entry + 5yrs', 2029: 'Entry + 6yrs', 2030: 'Entry + 7yrs'}
+
+    # Initialize a dictionary to store per year data
+    per_year_data = {}
 
     for year in years:
 
@@ -129,7 +136,6 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
 
         # Calculate Free Cash Flow post-debt service (FCF post-debt service)
         fcf_post_debt_service = cfads + cash_interest_paid + mandatory_debt_repayment
-        print(f"Year {year}: Free Cash Flow Post-Debt Service: {fcf_post_debt_service}")
 
         # Revolver logic: Draw if FCF post-debt service is negative, repay if positive
         if fcf_post_debt_service < 0:
@@ -137,22 +143,22 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
             revolver_draw = min(-fcf_post_debt_service,
                                 max_revolver_draw - revolver_balance)  # Limited by max revolver amount
             revolver_balance += revolver_draw
-            fcf_post_debt_service = 0  # After covering the shortfall, FCF becomes 0
-            print(f"Year {year}: Revolver Draw: {revolver_draw}")
-        elif fcf_post_debt_service > 0 and revolver_balance > 0:
-            # Repay revolver if there is a positive FCF and an outstanding revolver balance
-            revolver_repayment = min(fcf_post_debt_service, revolver_balance)
-            revolver_balance -= revolver_repayment
-            fcf_post_debt_service -= revolver_repayment
-            print(f"Year {year}: Revolver Repayment: {revolver_repayment}")
+            fcf_post_debt_service += revolver_draw  # Adjust FCF post revolver draw (it should not be reset to 0)
+        else:
+            if fcf_post_debt_service > 0 and revolver_balance > 0:
+                # Repay revolver if there is a positive FCF and an outstanding revolver balance
+                revolver_repayment = min(fcf_post_debt_service, revolver_balance)
+                revolver_balance -= revolver_repayment
+                fcf_post_debt_service -= revolver_repayment
+
+            if fcf_post_debt_service > 0:
+                # Excess cash after revolver repayment, accumulate in cash balance
+                cash_balance += fcf_post_debt_service
+                fcf_post_debt_service = 0  # Reset after adding to cash balance
 
         # Calculate revolver interest based on average balance
         average_revolver_balance = (starting_balances['RCF'] + revolver_balance) / 2
         revolver_interest = average_revolver_balance * interest_rates['RCF']
-
-        # Store revolver balance and interest for debugging
-        print(f"Year {year}: Revolver Balance: {revolver_balance}")
-        print(f"Year {year}: Revolver Interest Payment: {revolver_interest}")
 
         # Apply mandatory debt repayments
         for debt_type in ['Senior A', 'Senior B', 'Subordinate', 'Mezzanine']:
@@ -166,5 +172,65 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
             'Interest Payment': revolver_interest
         }
 
-    return exit_results
+        # Store per year data
+        per_year_data[year] = {
+            'ebitda': ebitda,
+            'cash_balance': cash_balance,
+            'debt_closing_balances': {debt_type: debt_info[debt_type][year]['Closing Balance'] for debt_type in debt_info},
+        }
 
+        # Perform exit calculations if current year is in exit_horizons
+        if year in exit_horizons:
+
+            # Get the exit multiple
+            exit_key = exit_horizon_to_key[year]
+
+            exit_multiple = expanded_metrics['Exit Metrics by Period'][exit_key]['Exit Multiple']
+
+            # Get EBITDA at that year
+            ebitda_exit = per_year_data[year]['ebitda']
+
+            # Calculate exit Enterprise Value
+            enterprise_value_exit = exit_multiple * ebitda_exit
+
+            # Sum closing balances of debt at that year
+            total_debt = sum(per_year_data[year]['debt_closing_balances'][debt_type] for debt_type in per_year_data[year]['debt_closing_balances'])
+
+            # Cash balance at that year
+            cash_exit = per_year_data[year]['cash_balance']
+
+            # Debugging print statements
+            print(f"\nExit Year {year}:")
+            print(f"Total Debt: {total_debt}")
+            print(f"Cash: {cash_exit}")
+
+            # Net Debt at exit
+            net_debt_exit = total_debt - cash_exit
+            print(f"Net Debt at Exit: {net_debt_exit}")
+
+            # Equity Value at exit
+            equity_value_exit = enterprise_value_exit - net_debt_exit
+
+            # Calculate MoM (Multiple of Money)
+            mom = equity_value_exit / equity_investment
+
+            # Prepare cash flows for IRR calculation
+            cf_equity = [-equity_investment] + [0] * years.index(year) + [equity_value_exit]
+
+            # Use pyxirr for fast IRR calculation
+            irr_equity = pyxirr.irr(cf_equity)
+            irr_equity_percent = irr_equity * 100
+
+            # Store results
+            exit_results[year] = {
+                'Exit Year': year,
+                'Equity Value at Exit': equity_value_exit,
+                'Equity Investment': equity_investment,
+                'MoM': mom,
+                'IRR': irr_equity_percent,
+                'Enterprise Value at Exit': enterprise_value_exit,
+                'Net Debt at Exit': net_debt_exit,
+            }
+    print(exit_results)
+
+    return exit_results
