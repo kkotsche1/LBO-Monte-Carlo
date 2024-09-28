@@ -64,15 +64,12 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
     balances = starting_balances.copy()
 
     for year in years:
-        print(f"\nYear: {year}")
         for debt_type in ['Senior A', 'Senior B', 'Subordinate', 'Mezzanine']:
             opening_balance = balances[debt_type]
 
             # Repayment values are already negative, so just add them directly
             repayment = repayment_schedule[debt_type][year]
             closing_balance = opening_balance + repayment  # Repayments reduce the balance (since they are negative)
-
-            print(f"{debt_type} - Opening Balance: {opening_balance}, Repayment: {repayment}, Closing Balance: {closing_balance}")
 
             # Calculate average balance for interest calculation
             average_balance = (opening_balance + closing_balance) / 2

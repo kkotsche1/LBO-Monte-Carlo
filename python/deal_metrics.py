@@ -1,5 +1,6 @@
 from excel_utils import get_cell_value
 from typing import Optional, Dict
+from openpyxl import worksheet
 
 
 def extract_exit_metrics_by_columns(sheet: worksheet, period_column_map: Dict[str, str]) -> Dict[str, Dict[str, float]]:
@@ -61,7 +62,6 @@ def extract_expanded_deal_metrics(sheet) -> dict:
     deal_metrics['Enterprise Value Entry'] = get_cell_value(sheet, 'P17')
 
     # Include exit metrics by period
-    from excel_utils import extract_exit_metrics_by_columns
     period_column_map = {"Entry + 3yrs": "U", "Entry + 4yrs": "V", "Entry + 5yrs": "W", "Entry + 6yrs": "X"}
     deal_metrics['Exit Metrics by Period'] = extract_exit_metrics_by_columns(sheet, period_column_map)
 

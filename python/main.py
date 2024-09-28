@@ -36,13 +36,7 @@ exit_horizons = [2026, 2027, 2028, 2029]
 # Run the LBO model to get financial metrics for each year
 lbo_results = run_lbo_model_with_repayment_schedule(expanded_metrics, selected_case, repayment_schedule, years, exit_horizons=exit_horizons)
 
-# Print the results for each exit horizon
-# for horizon, metrics in results.items():
-#     print(f"\nExit after {horizon} years (Exit Year: {metrics['Exit Year']}):")
-#     print(f"  Investor IRR: {metrics['IRR']:.2%}")
-#     print(f"  Investor MoM: {metrics['MoM']:.2f}x")
-#     print(f"  Net Debt at Exit: {metrics['Net Debt at Exit']:.2f}")
-#     print(f"  Equity Value at Exit: {metrics['Equity Value at Exit']:.2f}")
+
 
 def extract_stochastic_variables(expanded_metrics, all_cases):
     # Initialize the data structure
