@@ -145,13 +145,14 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
             exit_multiple = expanded_metrics['Exit Metrics by Period'][exit_key]['Exit Multiple']
             ebitda_exit = per_year_data[year]['ebitda']
             enterprise_value_exit = exit_multiple * ebitda_exit
-            total_debt = sum(per_year_data[year]['debt_closing_balances'][debt_type] for debt_type in per_year_data[year]['debt_closing_balances'])
+            total_debt = sum(per_year_data[year]['debt_closing_balances'][debt_type] for debt_type in
+                             per_year_data[year]['debt_closing_balances'] if debt_type != 'RCF')
             cash_exit = per_year_data[year]['cash_balance']
             net_debt_exit = total_debt - cash_exit
 
             equity_value_exit = enterprise_value_exit - net_debt_exit
             mom = equity_value_exit / equity_investment
-            cf_equity = [-equity_investment] + [0] * years.index(year) + [equity_value_exit]
+            cf_equity = [-equity_investment] + [0] * (years.index(year)-1) + [equity_value_exit]
             irr_equity = pyxirr.irr(cf_equity)
             irr_equity_percent = irr_equity * 100
 
