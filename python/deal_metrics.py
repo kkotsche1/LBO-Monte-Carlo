@@ -47,6 +47,7 @@ def extract_expanded_deal_metrics(sheet) -> dict:
     # Revolving Credit Facility (RCF)
     deal_metrics['RCF Amount'] = get_cell_value(sheet, 'U24')
     deal_metrics['RCF Interest'] = get_cell_value(sheet, 'X24')
+    deal_metrics['RCF Undrawn Interest'] = get_cell_value(sheet, 'X25')
 
     # Equity Contributions
     deal_metrics[f'{ZQWL} Equity'] = get_cell_value(sheet, 'D25')

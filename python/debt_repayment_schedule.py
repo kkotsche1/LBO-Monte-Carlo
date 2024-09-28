@@ -71,18 +71,21 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
             repayment = repayment_schedule[debt_type][year]
             closing_balance = opening_balance + repayment  # Repayments reduce the balance (since they are negative)
 
-            # Calculate average balance for interest calculation
-            average_balance = (opening_balance + closing_balance) / 2
-            interest_rate = interest_rates[debt_type]
-            interest_payment = average_balance * interest_rate
+            # Calculate interest based on opening balance for Senior B, and average balance for other debt types
+            if debt_type == 'Senior B':
+                # TODO: Make this dynamic to allow selection between average or opening balance for interest calculation
+                interest_payment = opening_balance * interest_rates[debt_type]
+            else:
+                average_balance = (opening_balance + closing_balance) / 2
+                interest_payment = average_balance * interest_rates[debt_type]
 
             # Store values for this year
             debt_info[debt_type][year] = {
                 'Opening Balance': opening_balance,
                 'Repayment': repayment,
                 'Closing Balance': closing_balance,
-                'Average Balance': average_balance,
-                'Interest Rate': interest_rate,
+                'Average Balance': average_balance if debt_type != 'Senior B' else opening_balance,  # For consistency
+                'Interest Rate': interest_rates[debt_type],
                 'Interest Payment': interest_payment
             }
 
@@ -100,14 +103,23 @@ def calculate_debt_balances_and_interest(deal_metrics, repayment_schedule, inter
         interest_rate = interest_rates[debt_type]
         interest_payment = average_balance * interest_rate
 
+        # Calculate undrawn balance and apply commitment fee
+        max_revolver_draw = deal_metrics["RCF Amount"]
+        undrawn_balance = max_revolver_draw - closing_balance  # Difference between max revolver and drawn balance
+        commitment_fee = undrawn_balance * deal_metrics['RCF Undrawn Interest']  # Commitment fee on undrawn portion
+        total_interest_payment = interest_payment + commitment_fee
+
         debt_info[debt_type][year] = {
             'Opening Balance': opening_balance,
             'RCF Utilization': rcf_utilization,
             'RCF Repayment': rcf_repayment,
             'Closing Balance': closing_balance,
             'Average Balance': average_balance,
-            'Interest Rate': interest_rate,
-            'Interest Payment': interest_payment
+            'Interest Rate, drawn': interest_rate,
+            'Interest Rate, undrawn': commitment_fee,
+            'Commitment Fee': commitment_fee,
+            'Drawn Interest Fee': interest_payment,
+            'Interest Payment': total_interest_payment
         }
 
         # Update opening balance for next year

@@ -3,17 +3,8 @@
 import pyxirr
 from python.debt_repayment_schedule import calculate_debt_balances_and_interest
 
-
-# lbo_run.py
-
-import pyxirr
-from python.debt_repayment_schedule import calculate_debt_balances_and_interest
-
 def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment_schedule, years, tax_rate=0.217,
                                           exit_horizons=[2026, 2027, 2028, 2029]):
-    """
-    Runs the LBO model with a predefined debt repayment schedule and calculates results for multiple exit years.
-    """
     year_results = {}
 
     # Extract initial debt balances and interest rates from expanded_metrics
@@ -41,9 +32,9 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
         expanded_metrics, repayment_schedule, interest_rates, starting_balances, years
     )
 
-    cash_balance = 0.0
     equity_investment = expanded_metrics['ZQWL Equity'] + expanded_metrics['Co-Invest'] + expanded_metrics['MPP']
     revolver_balance = 0
+    cash_balance = 0.0  # Initialize cash balance for the first year
 
     exit_results = {}
     exit_horizon_to_key = {2026: 'Entry + 3yrs', 2027: 'Entry + 4yrs', 2028: 'Entry + 5yrs', 2029: 'Entry + 6yrs'}
@@ -81,8 +72,8 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
 
             trade_working_capital_current = case_data.inventory[year] + case_data.accounts_receivable[year] + \
                                             case_data.accounts_payable[year]
-            trade_working_capital_previous = case_data.inventory[previous_year] + case_data.accounts_receivable[
-                previous_year] + case_data.accounts_payable[previous_year]
+            trade_working_capital_previous = case_data.inventory[previous_year] + case_data.accounts_receivable[previous_year] + \
+                                             case_data.accounts_payable[previous_year]
 
             net_working_capital_current = trade_working_capital_current + other_wc_assets_current + other_wc_liabilities_current
             net_working_capital_previous = trade_working_capital_previous + other_wc_assets_previous + other_wc_liabilities_previous
@@ -93,7 +84,6 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
         else:
             change_in_nwc = 0
             change_in_provisions = 0
-
 
         capex = revenue * case_data.m_capex_percent[year] + revenue * case_data.e_capex_percent[year]
         cfads = reported_ebitda - change_in_nwc - change_in_provisions - capex - taxes
@@ -107,23 +97,29 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
         # Store the unadjusted FCF post-debt service for debugging purposes
         original_fcf_post_debt_service = fcf_post_debt_service
 
+        # Calculate Closing Balance pre-revolver as Free Cash Flow (pre-revolver)
+        closing_balance_pre_revolver = original_fcf_post_debt_service
+
         # Revolver logic: Draw if FCF post-debt service is negative, repay if positive
         if fcf_post_debt_service < 0:
-            # Draw from revolver to cover the shortfall, but ensure it doesn't exceed max_revolver_draw
-            revolver_draw = min(-fcf_post_debt_service, max_revolver_draw - revolver_balance)
+            # Draw exactly enough to cover the shortfall (bring cash balance to 0)
+            revolver_draw = -fcf_post_debt_service  # Draw the amount needed to bring cash to zero
             revolver_balance += revolver_draw
-            fcf_post_debt_service += revolver_draw  # Adjust FCF post revolver draw (it should not be reset to 0)
+            cash_balance = 0  # After drawing from revolver, cash balance should be exactly 0
+            fcf_post_debt_service = 0  # Reset FCF post revolver draw (since it's fully covered)
         else:
             if fcf_post_debt_service > 0 and revolver_balance > 0:
                 # Repay revolver if there is a positive FCF and an outstanding revolver balance
                 revolver_repayment = min(fcf_post_debt_service, revolver_balance)
                 revolver_balance -= revolver_repayment
                 fcf_post_debt_service -= revolver_repayment
+                cash_balance -= revolver_repayment  # Adjust cash balance with revolver repayment
 
             if fcf_post_debt_service > 0:
                 # Excess cash after revolver repayment, accumulate in cash balance
                 cash_balance += fcf_post_debt_service
                 fcf_post_debt_service = 0  # Reset after adding to cash balance
+
 
         average_revolver_balance = (starting_balances['RCF'] + revolver_balance) / 2
         revolver_interest = average_revolver_balance * interest_rates['RCF']
