@@ -101,12 +101,6 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
         mandatory_debt_repayment = sum(
             repayment_schedule[debt_type][year] for debt_type in ['Senior A', 'Senior B', 'Subordinate', 'Mezzanine'])
 
-        if year == 2026:
-            print(f"Year {year} - CapEx: {capex}")
-        if year == 2026:
-            print(f"Year {year} - EBT: {ebt}")
-            print(f"Year {year} - Taxes: {taxes}")
-
         # Calculate Free Cash Flow post-debt service (FCF post-debt service)
         fcf_post_debt_service = cfads + cash_interest_paid + mandatory_debt_repayment
 
