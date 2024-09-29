@@ -167,4 +167,14 @@ def run_lbo_model_with_repayment_schedule(expanded_metrics, case_data, repayment
                 'Net Debt at Exit': net_debt_exit,
             }
 
+            print({
+                'Exit Year': year,
+                'Equity Value at Exit': equity_value_exit,
+                'Equity Investment': equity_investment,
+                'MoM': mom,
+                'IRR': irr_equity_percent,
+                'Enterprise Value at Exit': enterprise_value_exit,
+                'Net Debt at Exit': net_debt_exit,
+            })
+
     return exit_results

@@ -4,6 +4,7 @@
 #include "debt_calculations.hpp"
 #include <algorithm>
 #include <numeric>
+#include <string>
 #include <cmath>
 #include <limits>
 
@@ -175,17 +176,28 @@ std::map<int, std::map<std::string, double>> run_lbo_model_with_repayment_schedu
         double mandatory_debt_repayment = 0.0;
         for (const std::string& debt_type : {"Senior A", "Senior B", "Subordinate", "Mezzanine"}) {
             double repayment = 0.0;
+
             if (debt_type == "Senior A") {
-                repayment = repayment_schedule.senior_a_repayments.at(year);
+                if (repayment_schedule.senior_a_repayments.count(year)) {
+                    repayment = repayment_schedule.senior_a_repayments.at(year);
+                }
             } else if (debt_type == "Senior B") {
-                repayment = repayment_schedule.senior_b_repayments.at(year);
+                if (repayment_schedule.senior_b_repayments.count(year)) {
+                    repayment = repayment_schedule.senior_b_repayments.at(year);
+                }
             } else if (debt_type == "Subordinate") {
-                repayment = repayment_schedule.subordinate_repayments.at(year);
+                if (repayment_schedule.subordinate_repayments.count(year)) {
+                    repayment = repayment_schedule.subordinate_repayments.at(year);
+                }
             } else if (debt_type == "Mezzanine") {
-                repayment = repayment_schedule.mezzanine_repayments.at(year);
+                if (repayment_schedule.mezzanine_repayments.count(year)) {
+                    repayment = repayment_schedule.mezzanine_repayments.at(year);
+                }
             }
+
             mandatory_debt_repayment += repayment;
         }
+
 
         // Calculate Free Cash Flow post-debt service (FCF post-debt service)
         double fcf_post_debt_service = cfads + cash_interest_paid + mandatory_debt_repayment;
@@ -232,8 +244,7 @@ std::map<int, std::map<std::string, double>> run_lbo_model_with_repayment_schedu
         };
 
         if (std::find(exit_horizons.begin(), exit_horizons.end(), year) != exit_horizons.end()) {
-            std::string exit_key = exit_horizon_to_key.at(year);
-            double exit_multiple = expanded_metrics.exit_metrics_by_period.at(exit_key).exit_multiple;
+            double exit_multiple = expanded_metrics.exit_metrics_by_period.at(std::to_string(year)).exit_multiple;
             double ebitda_exit = per_year_data.at(year).at("ebitda");
             double enterprise_value_exit = exit_multiple * ebitda_exit;
 

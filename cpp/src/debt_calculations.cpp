@@ -18,17 +18,25 @@ DebtInfo calculate_debt_balances_and_interest(
         // Handle Senior A, Senior B, Subordinate, and Mezzanine debt
         for (const std::string& debt_type : {"Senior A", "Senior B", "Subordinate", "Mezzanine"}) {
             double opening_balance = balances[debt_type];
-            double repayment = 0.0;
+            double repayment = 0.0;  // Default repayment to 0.0
 
-            // Get repayment amount from repayment_schedule
+            // Get repayment amount from repayment_schedule if it exists, otherwise default to 0.0
             if (debt_type == "Senior A") {
-                repayment = repayment_schedule.senior_a_repayments.at(year);
+                if (repayment_schedule.senior_a_repayments.count(year)) {
+                    repayment = repayment_schedule.senior_a_repayments.at(year);
+                }
             } else if (debt_type == "Senior B") {
-                repayment = repayment_schedule.senior_b_repayments.at(year);
+                if (repayment_schedule.senior_b_repayments.count(year)) {
+                    repayment = repayment_schedule.senior_b_repayments.at(year);
+                }
             } else if (debt_type == "Subordinate") {
-                repayment = repayment_schedule.subordinate_repayments.at(year);
+                if (repayment_schedule.subordinate_repayments.count(year)) {
+                    repayment = repayment_schedule.subordinate_repayments.at(year);
+                }
             } else if (debt_type == "Mezzanine") {
-                repayment = repayment_schedule.mezzanine_repayments.at(year);
+                if (repayment_schedule.mezzanine_repayments.count(year)) {
+                    repayment = repayment_schedule.mezzanine_repayments.at(year);
+                }
             }
 
             double closing_balance = opening_balance + repayment;  // Repayments reduce the balance (repayments are negative)
@@ -62,8 +70,8 @@ DebtInfo calculate_debt_balances_and_interest(
         // Handle RCF (Revolving Credit Facility)
         const std::string debt_type = "RCF";
         double opening_balance = balances[debt_type];
-        double rcf_utilization = repayment_schedule.rcf_utilization.at(year);
-        double rcf_repayment = repayment_schedule.rcf_repayments.at(year);
+        double rcf_utilization = repayment_schedule.rcf_utilization.count(year) ? repayment_schedule.rcf_utilization.at(year) : 0.0;
+        double rcf_repayment = repayment_schedule.rcf_repayments.count(year) ? repayment_schedule.rcf_repayments.at(year) : 0.0;
         double closing_balance = opening_balance + rcf_utilization + rcf_repayment;
 
         double average_balance = (opening_balance + closing_balance) / 2.0;

@@ -31,18 +31,32 @@ years = [2024, 2025, 2026, 2027, 2028, 2029, 2030]
 # Define the exit horizons (3, 4, 5, and 6 years after investment)
 exit_horizons = [2026, 2027, 2028, 2029]
 
-# Step 4: Initialize the Monte Carlo simulator with all necessary data
-monte_carlo_simulator = MonteCarloSimulator(
-    cases=all_cases,
-    deal_metrics=expanded_metrics,
-    repayment_schedule=repayment_schedule,
-    years=years,
-    iterations=100000,
-    exit_horizons=exit_horizons
-)
+del all_cases['Bottom-Up Case']
 
-# Step 5: Run the simulation
-results_df = monte_carlo_simulator.run_simulation()
+print("cases data: ", all_cases)
+print("deal metrics: ", expanded_metrics)
+print("repayment schedule: ", repayment_schedule)
 
-# Step 6: Analyze the results
-monte_carlo_simulator.analyze_results(results_df)
+case = all_cases["Management Case"]
+
+lbo_results = run_lbo_model_with_repayment_schedule(expanded_metrics=expanded_metrics, case_data=case, repayment_schedule=repayment_schedule, years=[2024,2025,2026,2027,2028,2029], tax_rate=0.217)
+
+for key in lbo_results.keys():
+    print(lbo_results[key])
+    print()
+
+# # Step 4: Initialize the Monte Carlo simulator with all necessary data
+# monte_carlo_simulator = MonteCarloSimulator(
+#     cases=all_cases,
+#     deal_metrics=expanded_metrics,
+#     repayment_schedule=repayment_schedule,
+#     years=years,
+#     iterations=100000,
+#     exit_horizons=exit_horizons
+# )
+#
+# # Step 5: Run the simulation
+# results_df = monte_carlo_simulator.run_simulation()
+#
+# # Step 6: Analyze the results
+# monte_carlo_simulator.analyze_results(results_df)
