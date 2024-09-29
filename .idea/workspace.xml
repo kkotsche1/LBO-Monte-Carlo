@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6bd2f706-ee76-4c96-a230-b555bf5cec50" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/src/debt_calculations.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/src/debt_calculations.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpp/src/lbo_model.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/cpp/src/lbo_model.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python/lbo_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/lbo_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -137,7 +133,7 @@
       <workItem from="1727280562606" duration="2706000" />
       <workItem from="1727298762282" duration="3220000" />
       <workItem from="1727376505033" duration="9366000" />
-      <workItem from="1727467213008" duration="37088000" />
+      <workItem from="1727467213008" duration="37172000" />
     </task>
     <servers />
   </component>
