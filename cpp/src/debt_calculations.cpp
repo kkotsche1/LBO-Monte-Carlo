@@ -3,6 +3,7 @@
 #include "debt_calculations.hpp"
 #include <algorithm>
 #include <numeric>
+#include <iostream>
 
 DebtInfo calculate_debt_balances_and_interest(
     const DealMetrics& deal_metrics,
@@ -39,18 +40,12 @@ DebtInfo calculate_debt_balances_and_interest(
                 }
             }
 
-            double closing_balance = opening_balance + repayment;  // Repayments reduce the balance (repayments are negative)
+            double closing_balance = opening_balance - repayment;  // Repayments reduce the balance
 
             // Calculate interest
             double interest_payment = 0.0;
-            double average_balance = 0.0;
-            if (debt_type == "Senior B") {
-                interest_payment = opening_balance * interest_rates.at(debt_type);
-                average_balance = opening_balance;  // For consistency
-            } else {
-                average_balance = (opening_balance + closing_balance) / 2.0;
-                interest_payment = average_balance * interest_rates.at(debt_type);
-            }
+            double average_balance = (opening_balance + closing_balance) / 2.0;
+            interest_payment = average_balance * interest_rates.at(debt_type);
 
             // Store values for this year
             DebtYearInfo year_info;
@@ -72,27 +67,31 @@ DebtInfo calculate_debt_balances_and_interest(
         double opening_balance = balances[debt_type];
         double rcf_utilization = repayment_schedule.rcf_utilization.count(year) ? repayment_schedule.rcf_utilization.at(year) : 0.0;
         double rcf_repayment = repayment_schedule.rcf_repayments.count(year) ? repayment_schedule.rcf_repayments.at(year) : 0.0;
-        double closing_balance = opening_balance + rcf_utilization + rcf_repayment;
+        double closing_balance = opening_balance + rcf_utilization - rcf_repayment;
 
+        // Interest on the drawn amount
         double average_balance = (opening_balance + closing_balance) / 2.0;
         double interest_rate = interest_rates.at(debt_type);
-        double interest_payment = average_balance * interest_rate;
+        double drawn_interest_payment = average_balance * interest_rate;
 
-        // Calculate undrawn balance and commitment fee
+        // Ensure undrawn balance interest is calculated and added properly
         double max_revolver_draw = deal_metrics.rcf_amount;
         double undrawn_balance = max_revolver_draw - closing_balance;
         double commitment_fee = undrawn_balance * deal_metrics.rcf_undrawn_interest;
-        double total_interest_payment = interest_payment + commitment_fee;
+
+        // Total interest payment is the sum of interest on the drawn amount and the undrawn commitment fee
+        double total_interest_payment = drawn_interest_payment + commitment_fee;
+
 
         // Store values for this year
-        DebtYearInfo year_info;
+        DebtYearInfo year_info = {};
         year_info.opening_balance = opening_balance;
         year_info.rcf_utilization = rcf_utilization;
         year_info.rcf_repayment = rcf_repayment;
         year_info.closing_balance = closing_balance;
         year_info.average_balance = average_balance;
         year_info.interest_rate = interest_rate;
-        year_info.drawn_interest_fee = interest_payment;
+        year_info.drawn_interest_fee = drawn_interest_payment;
         year_info.commitment_fee = commitment_fee;
         year_info.total_interest_payment = total_interest_payment;
 
